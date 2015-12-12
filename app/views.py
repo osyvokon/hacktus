@@ -1,47 +1,41 @@
-from app import app
-from .forms import LoginForm
-from flask import render_template, flash, redirect
+from app import app, github, db
+from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
 import requests
 import json
 
-GITHUB_API = 'https://api.github.com'
-gh = {
-    'login': None,
-    'password': None
-}
+
+@app.before_request
+def before_request():
+    g.user = None
 
 @app.route('/')
 @app.route('/index')
 def index():
-    user = {'nickname': 'Marina'}  # fake user
+    if 'github_token' in session:
+        user = github.get('user')
+    else:
+        user = None
     return render_template('index.html',
                            title='Home',
                            user=user)
 
-@app.route('/signin')
-def signin():
-    url = GITHUB_API + '/authorizations'
-    payload = {
-        'note': 'temporary auth'
-    }
-    res = requests.post(
-        url,
-        auth = (gh['login'], gh['password']),
-        data = json.dumps(payload),
-    )
-    return res.text
-    # return render_template('signin.html',
-    #                        title='Home')
+@app.route('/gh_callback')
+def authorized():
+    resp = github.authorized_response()
+    if resp is None:
+        return 'Access denied'
+    session['github_token'] = (resp['access_token'], '')
+    user = github.get('user')
+    return jsonify(user.data)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        gh['login'] = form.gh_login.data
-        gh['password'] = form.gh_password.data
-        flash('Login requested for GitHub="%s", remember_me=%s' %
-              (form.gh_login.data, str(form.remember_me.data)))
-        return redirect('/signin')
-    return render_template('login.html',
-                           title='Sign In',
-                           form=form)
+    if session.get('user_id', None) is None:
+        return github.authorize(
+                callback=url_for('authorized', _external=True))
+    else:
+        return "Already logged in"
+
+@github.tokengetter
+def get_github_oauth_token():
+    return session.get('github_token')
