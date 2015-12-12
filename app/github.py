@@ -6,7 +6,6 @@ from app import celery, connect_mongo
 class GithubProvider:
 
     def __init__(self, github_token):
-        print(github_token)
         self.github = Github(github_token)
 
     def run(self, dt):
@@ -44,6 +43,7 @@ def get_stats_for_day(github_token, dt):
     if stats and dt != today:
         return
 
+    print("Getting GitHub stats for {}".format(dt))
     stats = GithubProvider(github_token).run(dt)
     db.github.by_day.update({'dt': dt.toordinal()},
             {
