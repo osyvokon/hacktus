@@ -5,7 +5,9 @@ import os
 import pymongo
 
 GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
-GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_SECRET_ID")
+GOODREADS_KEY_ID = os.environ.get("GOODREADS_KEY_ID")
+GOODREADS_SECRET_ID = os.environ.get("GOODREADS_SECRET_ID")
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -13,8 +15,8 @@ app.config.from_object('config')
 oauth = OAuth(app)
 github_auth = oauth.remote_app(
     'github',
-    consumer_key=os.environ.get("GITHUB_CLIENT_ID"),
-    consumer_secret=os.environ.get("GITHUB_SECRET_ID"),
+    consumer_key=GITHUB_CLIENT_ID,
+    consumer_secret=GITHUB_CLIENT_SECRET,
     request_token_params={'scope': 'user:email'},
     base_url='https://api.github.com/',
     request_token_url=None,

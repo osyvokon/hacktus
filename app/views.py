@@ -1,6 +1,6 @@
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
-from app.github import GithubProvider, get_stats_for_day
+from app.github_task import GithubProvider, get_stats_for_day
 import datetime
 
 
