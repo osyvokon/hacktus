@@ -22,6 +22,6 @@ github_auth = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize'
 )
 
-db = pymongo.Connection().hacktus
+db = pymongo.MongoClient().hacktus
 
 from app import views
