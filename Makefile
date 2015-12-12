@@ -5,4 +5,4 @@ server:
 
 worker:
 	mkdir -p logs
-	celery worker -b redis://localhost:6379 --app=app.github --purge --detach --logfile=logs/workers.log
+	celery multi restart 1 -b redis://localhost:6379 --app=app.github --purge --detach --logfile=logs/workers.log
