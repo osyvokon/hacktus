@@ -14,12 +14,14 @@ class GithubProvider:
         commits_count = 0
         additions = 0
         deletions = 0
+        stars = 0
 
         since = datetime.datetime(dt.year, dt.month, dt.day)
         until = since + datetime.timedelta(days=1)
 
         for repo in repos:
             repos_count += 1
+            stars += repo.stargazers_count
             commits = repo.get_commits(since=since, until=until)
             for commit in commits:
                 commits_count += 1
@@ -32,6 +34,7 @@ class GithubProvider:
             'commits_count': commits_count,
             'additions': additions,
             'deletions': deletions,
+            'stars': stars,
         }
 
 
