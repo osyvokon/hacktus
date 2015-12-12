@@ -27,6 +27,7 @@ def authorized():
         return 'Access denied'
     session['github_token'] = (resp['access_token'], '')
     user = github_auth.get('user')
+    print("Authorized GitHub, token is {}".format(resp['access_token']))
     return jsonify(user.data)
 
 @app.route('/login')
