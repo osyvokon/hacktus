@@ -1,6 +1,6 @@
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
-from app.github import GithubProvider
+from app.github import GithubProvider, get_stats_for_day
 import datetime
 
 
@@ -43,12 +43,18 @@ def get_github_oauth_token():
 
 @app.route('/stats')
 def stats():
-    g = GithubProvider(get_github_oauth_token()[0])
+    token = get_github_oauth_token()[0]
     result = []
+    now = datetime.date.today().toordinal()
     for x in range(7):
-        dt = datetime.datetime.now() - datetime.timedelta(days=x)
-        stats = g.run(dt)
+        dt = now - x
+        stats = db.github.by_day.find_one({'dt': dt})
+        if stats:
+            stats = stats['stats']
+        else:
+            stats = {"msg": "IN PROGRESS"}
+            get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt))
+
         result.append(stats)
 
     return jsonify({'result': result})
-

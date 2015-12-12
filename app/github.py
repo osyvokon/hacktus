@@ -1,5 +1,6 @@
 import datetime
 from github import Github
+from app import celery, connect_mongo
 
 
 class GithubProvider:
@@ -33,3 +34,16 @@ class GithubProvider:
             'additions': additions,
             'deletions': deletions,
         }
+
+
+@celery.task
+def get_stats_for_day(github_token, dt):
+    stats = GithubProvider(github_token).run(dt)
+    db = connect_mongo()
+    db.github.by_day.update({'dt': dt.toordinal()},
+            {
+                '$set': {
+                    'stats': stats
+                }
+            },
+            upsert=True)

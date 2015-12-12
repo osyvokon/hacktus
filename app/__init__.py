@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_oauthlib.client import OAuth
+from celery import Celery
 import os
 import pymongo
 
@@ -22,6 +23,15 @@ github_auth = oauth.remote_app(
     authorize_url='https://github.com/login/oauth/authorize'
 )
 
-db = pymongo.MongoClient().hacktus
+MONGO_URI = "mongodb://localhost:27017"
+MONGO_DB = "hacktus"
+
+def connect_mongo():
+    return pymongo.MongoClient(MONGO_URI)[MONGO_DB]
+
+db = connect_mongo()
+
+BROKER_URL = 'redis://localhost:6379/0'
+celery = Celery('tasks', broker=BROKER_URL)
 
 from app import views
