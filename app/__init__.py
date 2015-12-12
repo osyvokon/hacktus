@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 oauth = OAuth(app)
-github = oauth.remote_app(
+github_auth = oauth.remote_app(
     'github',
     consumer_key=os.environ.get("GITHUB_CLIENT_ID"),
     consumer_secret=os.environ.get("GITHUB_SECRET_ID"),
