@@ -1,0 +1,19 @@
+<!-- extend from base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Sign In with your GitHub</h1>
+<form action="" method="post" name="login">
+    {{ form.hidden_tag() }}
+    <p>
+        GitHub login:<br>
+        {{ form.gh_login(size=80) }}<br>
+    </p>
+    <p>
+        GitHub password:<br>
+        {{ form.gh_password(size=80) }}<br>
+    </p>
+    <p>{{ form.remember_me }} Remember Me</p>
+    <p><input type="submit" value="Sign In"></p>
+</form>
+{% endblock %}
