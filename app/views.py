@@ -156,7 +156,7 @@ def codeforces():
 
 def get_scores(user, compute=True):
     scores = Counter()
-    user = session['user']['login']
+    user = user['login']
     for x in db.github.by_day.find({'user': user}):
         stats = x.get('stats') 
         if not stats:
