@@ -1,6 +1,7 @@
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
 from app.github_task import GithubProvider, get_stats_for_day
+from app.codeforces_task import CodeforcesProvider, get_stats_for_day as codeforces_stats
 import datetime
 
 
@@ -55,7 +56,25 @@ def stats():
         else:
             stats = {"msg": "IN PROGRESS"}
             get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt))
-
         result.append(stats)
-
     return jsonify({'result': result})
+
+@app.route('/cf_stats')
+def cf_stats():
+    result = []
+    now = datetime.date.today().toordinal()
+    for x in range(30):
+        dt = now - x
+        stats = db.codeforces.by_day.find_one({'dt': dt})
+        if stats:
+            stats = stats['stats']
+        else:
+            stats = {"msg": "IN PROGRESS"}
+            codeforces_stats.delay(datetime.datetime.fromordinal(dt))
+        result.append(stats)
+    return jsonify({'result': result})
+
+@app.route('/codeforces')
+def codeforces():
+    now = datetime.date.today()
+    return jsonify(codeforces_stats(now))
