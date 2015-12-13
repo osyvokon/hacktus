@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 
+<table>
+    <tr>
+        <td>
 
 <pre>
 <h1>{{user['name'].upper()}}</h1>  <a href="/logout">logout</a>
@@ -20,6 +23,12 @@
   <b>Level:         {{scores['level']}} {{'*' * scores['level']}}</b>
 </dl>
 
+
+</td>
+<td>
+    <img src="{{user['avatar_url']}}" width=200>
+</td>
+</tr>
 
 
 {% endblock %}
