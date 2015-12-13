@@ -2,6 +2,7 @@ from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
 from app.github_task import GithubProvider, get_stats_for_day
 from app.codeforces_task import CodeforcesProvider, get_stats_for_day as codeforces_stats
+from forms import SettingsForm
 import datetime
 
 
@@ -91,6 +92,17 @@ def cf_stats():
             codeforces_stats.delay(datetime.datetime.fromordinal(dt))
         result.append(stats)
     return jsonify({'result': result})
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    form = SettingsForm()
+    if form.validate_on_submit():
+        flash('Settings saved!')
+        session['cf_login'] = form.cf_login.data
+    else:
+        if 'cf_login' in session:
+            form.cf_login.data = session['cf_login']
+    return render_template('settings.html', form=form, title='Settings')
 
 @app.route('/codeforces')
 def codeforces():
