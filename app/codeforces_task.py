@@ -70,9 +70,9 @@ def get_stats_for_day(name, dt):
         'passed': 0,
         'failed': 0
     }
-    print "get_stats_for_day celery run"
+    print( "get_stats_for_day celery run")
     if pr.last_record is None:
-        print "refresh_submissions"
+        print ("refresh_submissions")
         pr.refresh_submissions()
 
     subs = pr.get_submissions(dt)

@@ -119,8 +119,20 @@ def codeforces():
     return jsonify(pr.get_submissions(today))
 
 def get_scores(user):
-    stats = Counter()
+    scores = Counter()
     for x in db.github.by_day.find():     # filter by user
-        stats.update(x.get('stats', {}))
+        stats = x.get('stats') 
+        if not stats:
+            continue
+        scores.update(stats)
 
-    return stats
+        # do not sum repos_count, rather use latest value
+        # (FIXME which is currently random)
+        if 'repos_count' in stats:
+            scores['repos_count'] = stats['repos_count']
+
+    scores['level'] = int(scores['stars'] / 10 +
+                          scores['additions'] / 500 +
+                          scores['repos_count'] / 5)
+
+    return scores
