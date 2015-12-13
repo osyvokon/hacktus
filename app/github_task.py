@@ -39,20 +39,13 @@ class GithubProvider:
 
 
 @celery.task
-def get_stats_for_day(github_token, dt):
+def get_stats_for_day(github_token, dt, name):
     db = connect_mongo()
-    stats = db.github.by_day.find_one({'dt': dt})
+    stats = db.github.by_day.find_one({'user': name, 'dt': dt})
     today = datetime.date.today().toordinal()
     if stats and dt != today:
         return
 
-    print("Getting GitHub stats for {}".format(dt))
+    print("Getting GitHub stats for {}, {}".format(dt, name))
     stats = GithubProvider(github_token).run(dt)
-    db.github.by_day.update({'dt': dt.toordinal(),
-                             'user': user},
-            {
-                '$set': {
-                    'stats': stats
-                }
-            },
-            upsert=True)
+    db.github.by_day.update({'user': name, 'dt': dt.toordinal()}, {'$set': {'stats': stats}}, upsert=True)
