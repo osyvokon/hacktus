@@ -9,6 +9,7 @@ class CodeforcesProvider:
         self.collection = self.db.codeforces.submissions
         self.stats = self.db.codeforces.by_day
         self.last_record = self.refresh_last_record()
+        self.url = "http://codeforces.com/api/user.status?handle={}&from=1&count={}"
 
     def refresh_last_record(self):
         cr = self.collection.find({'user': self.username}).sort([('ts', -1)]).limit(1)
@@ -25,8 +26,26 @@ class CodeforcesProvider:
             return self.last_record['ts']
         return None
 
+    def has_new_submissions(self):
+        url = self.url.format(self.username, 1)
+        data = requests.get(url).json()
+        last_ts = self.get_last_ts()
+        result = False
+
+        if data['result'] is not None:
+            for res in data['result']:
+                timestamp = res['creationTimeSeconds']
+                ts = datetime.date.fromtimestamp(timestamp).toordinal()
+                if last_ts is None or last_ts < ts:
+                    result = True
+        print "Codeforces - checking for new submissions: {}".format(self.username)
+        return result
+
     def refresh_submissions(self):
-        url = "http://codeforces.com/api/user.status?handle={}&from=1&count=500".format(self.username)
+        if not self.has_new_submissions():
+            return
+        print "Codeforces - refreshing submissions for: {}".format(self.username)
+        url = self.url.format(self.username, 500)
         data = requests.get(url).json()
         saved = 0
         last_ts = self.get_last_ts()
@@ -46,7 +65,7 @@ class CodeforcesProvider:
                     }
                     self.collection.update(sub, sub, upsert=True)
                     saved += 1
-        print('saved new submissions: {}'.format(saved))
+        print('Codeforces - saved submissions: {}'.format(saved))
 
     def get_submissions(self, dt):
         since = datetime.datetime(dt.year, dt.month, dt.day)
@@ -62,7 +81,6 @@ class CodeforcesProvider:
         return result
 
 
-@celery.task
 def get_stats_for_day(name, dt):
     pr = CodeforcesProvider(name)
     result = {
@@ -70,18 +88,17 @@ def get_stats_for_day(name, dt):
         'passed': 0,
         'failed': 0
     }
-    print "get_stats_for_day celery run"
-    if pr.last_record is None:
-        print "refresh_submissions"
-        pr.refresh_submissions()
+    print "Codeforces - getting statistics"
+    pr.refresh_submissions()
 
     subs = pr.get_submissions(dt)
     if subs is not None and len(subs) > 0:
         for sub in subs:
-            if sub.success:
+            if 'success' in sub and sub['success']:
                 result['passed'] += 1
             else:
                 result['failed'] += 1
             result['submissions'] += 1
     pr.stats.update({'user': name, 'dt': dt.toordinal()}, {'$set': {'stats': result}}, upsert=True)
     return result
+

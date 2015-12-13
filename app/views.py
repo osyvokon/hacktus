@@ -1,7 +1,8 @@
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
 from app.github_task import GithubProvider, get_stats_for_day
-from app.codeforces_task import CodeforcesProvider, get_stats_for_day as codeforces_stats
+from app.codeforces_task import CodeforcesProvider
+from app.codeforces_task import get_stats_for_day as cf_day
 from app.forms import SettingsForm
 import datetime
 
@@ -83,18 +84,11 @@ def cf_stats():
     if 'cf_login' not in session:
         return redirect(url_for(settings))
 
-    result = []
+    result = {}
     name = session['cf_login']
-    now = datetime.date.today().toordinal()
-    for x in range(30):
-        dt = now - x
-        stats = db.codeforces.by_day.find_one({'user': name, 'dt': dt})
-        if stats:
-            stats = stats['stats']
-        else:
-            stats = {"msg": "IN PROGRESS"}
-            codeforces_stats.delay(name, datetime.datetime.fromordinal(dt))
-        result.append(stats)
+    now = datetime.date.today()
+    result['daily'] = cf_day(name, now)
+
     return jsonify({'result': result})
 
 @app.route('/settings', methods=['GET', 'POST'])
