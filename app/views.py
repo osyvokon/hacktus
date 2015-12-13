@@ -1,6 +1,6 @@
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
-from app.github_task import GithubProvider, get_stats_for_day
+from app.github_task import GithubProvider, get_github_stats_for_day
 from app.codeforces_task import CodeforcesProvider
 from app.forms import SettingsForm
 import datetime
@@ -97,7 +97,7 @@ def _stats():
             stats = stats['stats']
         else:
             stats = {"msg": "IN PROGRESS"}
-            get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt), name)
+            get_github_stats_for_day.delay(token, datetime.datetime.fromordinal(dt), name)
         result.append(stats)
     return result
 
@@ -147,6 +147,8 @@ def get_scores(user):
         # (FIXME which is currently random)
         if 'repos_count' in stats:
             scores['repos_count'] = stats['repos_count']
+        if 'stars' in stats:
+            scores['stars'] = stats['stars']
 
     scores['level'] = int(scores['stars'] / 10 +
                           scores['additions'] / 500 +
