@@ -4,6 +4,7 @@ from app.github_task import GithubProvider, get_stats_for_day
 from app.codeforces_task import CodeforcesProvider, get_stats_for_day as codeforces_stats
 from app.forms import SettingsForm
 import datetime
+from collections import Counter
 
 
 @app.before_request
@@ -110,8 +111,8 @@ def codeforces():
     return jsonify(codeforces_stats(now))
 
 def get_scores(user):
-    return {
-        'stars': 100,
-        'additions': 200,
-        'commits_count': 50,
-    }
+    stats = Counter()
+    for x in db.github.by_day.find():     # filter by user
+        stats.update(x.get('stats', {}))
+
+    return stats
