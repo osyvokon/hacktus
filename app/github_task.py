@@ -43,7 +43,7 @@ def get_github_stats_for_day(github_token, dt, name):
     db = connect_mongo()
     stats = db.github.by_day.find_one({'user': name, 'dt': dt})
     today = datetime.date.today().toordinal()
-    if stats and dt != today:
+    if stats: # and dt != today:
         return
 
     print("Getting GitHub stats for {}, {}".format(dt, name))
