@@ -13,8 +13,7 @@ def before_request():
 @app.route('/index')
 def index():
     if 'github_token' in session:
-        user = github_auth.get('user')
-        return jsonify(user.data)
+        return redirect(url_for('profile'))
     else:
         user = None
     return render_template('index.html',
@@ -28,8 +27,21 @@ def authorized():
         return 'Access denied'
     session['github_token'] = (resp['access_token'], '')
     user = github_auth.get('user')
+    session['user'] = user.data
     print("Authorized GitHub, token is {}".format(resp['access_token']))
-    return jsonify(user.data)
+    return redirect(url_for('profile'))
+
+@app.route('/profile')
+def profile():
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('login'))
+
+    return render_template('profile.html',
+                           title='Profile',
+                           user=user,
+                           scores=get_scores(user))
+
 
 @app.route('/login')
 def login():
@@ -38,6 +50,12 @@ def login():
                 callback=url_for('authorized', _external=True))
     else:
         return "Already logged in"
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 @github_auth.tokengetter
 def get_github_oauth_token():
@@ -78,3 +96,10 @@ def cf_stats():
 def codeforces():
     now = datetime.date.today()
     return jsonify(codeforces_stats(now))
+
+def get_scores(user):
+    return {
+        'stars': 100,
+        'additions': 200,
+        'commits_count': 50,
+    }

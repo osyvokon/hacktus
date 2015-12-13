@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{user['name']}}</h1>
+<a href="/logout">logout</a>
+
+<img src="{{user['avatar_url']}}" width=200>
+
+<h2>My hackchievements</h2>
+
+<dl>
+  <dt>Stars<dt>
+  <dd>{{scores['stars']}}</dd>
+  
+  <dt>Lines of code written</dt>
+  <dd>{{scores['additions']}}</dd>
+
+  <dt>Commits made</dt>
+  <dd>{{scores['commit']}}</dd>
+</dl>
+
+
+{% endblock %}
+
