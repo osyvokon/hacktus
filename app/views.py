@@ -80,16 +80,20 @@ def stats():
 
 @app.route('/cf_stats')
 def cf_stats():
+    if 'cf_login' not in session:
+        return redirect(url_for(settings))
+
     result = []
+    name = session['cf_login']
     now = datetime.date.today().toordinal()
     for x in range(30):
         dt = now - x
-        stats = db.codeforces.by_day.find_one({'dt': dt})
+        stats = db.codeforces.by_day.find_one({'user': name, 'dt': dt})
         if stats:
             stats = stats['stats']
         else:
             stats = {"msg": "IN PROGRESS"}
-            codeforces_stats.delay(datetime.datetime.fromordinal(dt))
+            codeforces_stats.delay(name, datetime.datetime.fromordinal(dt))
         result.append(stats)
     return jsonify({'result': result})
 
@@ -106,8 +110,12 @@ def settings():
 
 @app.route('/codeforces')
 def codeforces():
-    now = datetime.date.today()
-    return jsonify(codeforces_stats(now))
+    if 'cf_login' not in session:
+        return redirect(url_for(settings))
+
+    today = datetime.date.today()
+    pr = CodeforcesProvider(session['cf_login'])
+    return jsonify(pr.get_submissions(today))
 
 def get_scores(user):
     return {

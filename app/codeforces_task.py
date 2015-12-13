@@ -2,9 +2,6 @@ from app import celery, connect_mongo
 import datetime
 import requests
 
-CODEFORCES_NAME = 'Fefer_Ivan'
-
-
 class CodeforcesProvider:
     def __init__(self, username):
         self.username = username
@@ -14,7 +11,7 @@ class CodeforcesProvider:
         self.last_record = self.refresh_last_record()
 
     def refresh_last_record(self):
-        cr = self.collection.find().sort([('ts', -1)]).limit(1)
+        cr = self.collection.find({'user': self.username}).sort([('ts', -1)]).limit(1)
         last_rec = None
         if cr.count() > 0:
             for doc in cr:
@@ -29,7 +26,7 @@ class CodeforcesProvider:
         return None
 
     def refresh_submissions(self):
-        url = "http://codeforces.com/api/user.status?handle={}&from=1&count=50".format(CODEFORCES_NAME)
+        url = "http://codeforces.com/api/user.status?handle={}&from=1&count=500".format(self.username)
         data = requests.get(url).json()
         saved = 0
         last_ts = self.get_last_ts()
@@ -65,19 +62,19 @@ class CodeforcesProvider:
         return result
 
 
-def refresh_stats_for_day():
-    pr = CodeforcesProvider(CODEFORCES_NAME)
-    pr.refresh_submissions()
-
-
 @celery.task
-def get_stats_for_day(dt):
-    pr = CodeforcesProvider(CODEFORCES_NAME)
+def get_stats_for_day(name, dt):
+    pr = CodeforcesProvider(name)
     result = {
         'submissions': 0,
         'passed': 0,
         'failed': 0
     }
+    print "get_stats_for_day celery run"
+    if pr.last_record is None:
+        print "refresh_submissions"
+        pr.refresh_submissions()
+
     subs = pr.get_submissions(dt)
     if subs is not None and len(subs) > 0:
         for sub in subs:
@@ -86,5 +83,5 @@ def get_stats_for_day(dt):
             else:
                 result['failed'] += 1
             result['submissions'] += 1
-    pr.stats.update({'dt': dt.toordinal()}, {'$set': {'stats': result}}, upsert=True)
+    pr.stats.update({'user': name, 'dt': dt.toordinal()}, {'$set': {'stats': result}}, upsert=True)
     return result
