@@ -48,7 +48,8 @@ def get_stats_for_day(github_token, dt):
 
     print("Getting GitHub stats for {}".format(dt))
     stats = GithubProvider(github_token).run(dt)
-    db.github.by_day.update({'dt': dt.toordinal()},
+    db.github.by_day.update({'dt': dt.toordinal(),
+                             'user': user},
             {
                 '$set': {
                     'stats': stats
