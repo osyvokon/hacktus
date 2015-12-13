@@ -30,6 +30,9 @@ def authorized():
     user = github_auth.get('user')
     session['user'] = user.data
     print("Authorized GitHub, token is {}".format(resp['access_token']))
+    db.users.update({'github_login': user.data['login']},
+                    {'$set': {'gh_meta': user.data}},
+                    upsert=True)
     return redirect(url_for('profile'))
 
 @app.route('/profile')
@@ -38,11 +41,27 @@ def profile():
     if not user:
         return redirect(url_for('login'))
 
+    hacktivities = map(format_day, _stats())
     return render_template('profile.html',
                            title='Profile',
                            user=user,
                            scores=get_scores(user),
-                           hacktivities=map(format_day, _stats()))
+                           hacktivities=hacktivities)
+
+@app.route('/profile/<string:user>')
+def profile_for_user(user):
+    user = db.users.find_one({'github_login': user})
+    if not user:
+        return "No user"
+
+    user = user.get('gh_meta', {})
+
+    hacktivities = []
+    return render_template('profile.html',
+                           title='Profile',
+                           user=user,
+                           scores=get_scores(user, compute=False),
+                           hacktivities=hacktivities)
 
 def format_day(day):
     if day.get('msg') == "IN PROGRESS":
@@ -135,7 +154,7 @@ def codeforces():
     pr = CodeforcesProvider(session['cf_login'])
     return jsonify(pr.get_submissions(today))
 
-def get_scores(user):
+def get_scores(user, compute=True):
     scores = Counter()
     user = session['user']['login']
     for x in db.github.by_day.find({'user': user}):
