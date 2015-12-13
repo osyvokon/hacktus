@@ -5,6 +5,7 @@ from app.codeforces_task import CodeforcesProvider
 from app.codeforces_task import get_stats_for_day as cf_day
 from app.forms import SettingsForm
 import datetime
+from collections import Counter
 
 
 @app.before_request
@@ -112,8 +113,20 @@ def codeforces():
     return jsonify(pr.get_submissions(today))
 
 def get_scores(user):
-    return {
-        'stars': 100,
-        'additions': 200,
-        'commits_count': 50,
-    }
+    scores = Counter()
+    for x in db.github.by_day.find():     # filter by user
+        stats = x.get('stats') 
+        if not stats:
+            continue
+        scores.update(stats)
+
+        # do not sum repos_count, rather use latest value
+        # (FIXME which is currently random)
+        if 'repos_count' in stats:
+            scores['repos_count'] = stats['repos_count']
+
+    scores['level'] = int(scores['stars'] / 10 +
+                          scores['additions'] / 500 +
+                          scores['repos_count'] / 5)
+
+    return scores
