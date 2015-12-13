@@ -137,7 +137,8 @@ def codeforces():
 
 def get_scores(user):
     scores = Counter()
-    for x in db.github.by_day.find():     # filter by user
+    user = session['user']['login']
+    for x in db.github.by_day.find({'user': user}):
         stats = x.get('stats') 
         if not stats:
             continue

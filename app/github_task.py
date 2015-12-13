@@ -44,6 +44,7 @@ def get_github_stats_for_day(github_token, dt, name):
     stats = db.github.by_day.find_one({'user': name, 'dt': dt.toordinal()})
     today = datetime.date.today().toordinal()
     if stats: # and dt != today:
+        print("Cached")
         return
 
     print("Getting GitHub stats for {}, {}".format(dt, name))
