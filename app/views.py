@@ -6,7 +6,6 @@ from app.forms import SettingsForm
 import datetime
 from collections import Counter
 
-
 @app.before_request
 def before_request():
     g.user = None
@@ -65,17 +64,24 @@ def get_github_oauth_token():
 
 @app.route('/stats')
 def stats():
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('login'))
+    name = user['login']
+    if not name:
+        return redirect(url_for('login'))
+
     token = get_github_oauth_token()[0]
     result = []
     now = datetime.date.today().toordinal()
     for x in range(7):
         dt = now - x
-        stats = db.github.by_day.find_one({'dt': dt})
+        stats = db.github.by_day.find_one({'user': name, 'dt': dt})
         if stats:
             stats = stats['stats']
         else:
             stats = {"msg": "IN PROGRESS"}
-            get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt))
+            get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt), name)
         result.append(stats)
     return jsonify({'result': result})
 
