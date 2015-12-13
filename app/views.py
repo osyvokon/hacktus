@@ -90,7 +90,7 @@ def _stats():
     token = get_github_oauth_token()[0]
     result = []
     now = datetime.date.today().toordinal()
-    for x in range(7):
+    for x in range(5):
         dt = now - x
         stats = db.github.by_day.find_one({'user': name, 'dt': dt})
         if stats:
