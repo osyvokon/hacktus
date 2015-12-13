@@ -1,27 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{user['name']}}</h1>
-<a href="/logout">logout</a>
 
-<img src="{{user['avatar_url']}}" width=200>
 
-<h2>My hackchievements</h2>
+<pre>
+<h1>{{user['name'].upper()}}</h1>  <a href="/logout">logout</a>
 
-<dl>
-  <dt>Stars<dt>
-  <dd>{{scores['stars']}}</dd>
-  
-  <dt>Lines of code written</dt>
-  <dd>{{scores['additions']}}</dd>
+<b>My hackchievements</b>
+------------------
 
-  <dt>Commits made</dt>
-  <dd>{{scores['commit']}}</dd>
+  Stars:         {{scores['stars']}}
+  Lines of code: {{scores['additions']}}
 
-  <dt>Repositories</dt>
-  <dd>{{scores['repos_count']}}</dd>
+  Commits made:  {{scores['commit']}}
 
-  <dt><b>Level:</b></dt>
-  <dd><h2>{{scores['level']}}</h2></dd>
+  Repositories:  {{scores['repos_count']}}
+  Books read:    {{scores['books']}}
+  Challenges:    {{scores['challenges']}}
+
+  <b>Level:         {{scores['level']}} {{'*' * scores['level']}}</b>
 </dl>
 
 
