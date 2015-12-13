@@ -41,7 +41,7 @@ class GithubProvider:
 @celery.task
 def get_github_stats_for_day(github_token, dt, name):
     db = connect_mongo()
-    stats = db.github.by_day.find_one({'user': name, 'dt': dt})
+    stats = db.github.by_day.find_one({'user': name, 'dt': dt.toordinal()})
     today = datetime.date.today().toordinal()
     if stats: # and dt != today:
         return
