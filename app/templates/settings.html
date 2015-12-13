@@ -1,0 +1,14 @@
+<!-- extend from base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Your settings for the application</h1>
+    <form action="" method="post" name="settings">
+        {{ form.hidden_tag() }}
+        <p>
+            GodeForces login:<br>
+            {{ form.cf_login(size=80) }}<br>
+        </p>
+        <p><input type="submit" value="Save"></p>
+    </form>
+{% endblock %}
