@@ -42,7 +42,20 @@ def profile():
     return render_template('profile.html',
                            title='Profile',
                            user=user,
-                           scores=get_scores(user))
+                           scores=get_scores(user),
+                           hacktivities=map(format_day, _stats()))
+
+def format_day(day):
+    if day.get('msg') == "IN PROGRESS":
+        return "...collecting data, please wait"
+
+    else:
+        s = []
+        for k, v in sorted(day.items()):
+            if v:
+                s.append('{k} = {v}'.format(k=k, v=v))
+        return '; '.join(s)
+
 
 
 @app.route('/login')
@@ -65,6 +78,9 @@ def get_github_oauth_token():
 
 @app.route('/stats')
 def stats():
+    return jsonify({'result': _stats()})
+
+def _stats():
     token = get_github_oauth_token()[0]
     result = []
     now = datetime.date.today().toordinal()
@@ -77,7 +93,7 @@ def stats():
             stats = {"msg": "IN PROGRESS"}
             get_stats_for_day.delay(token, datetime.datetime.fromordinal(dt))
         result.append(stats)
-    return jsonify({'result': result})
+    return result
 
 @app.route('/cf_stats')
 def cf_stats():
@@ -131,3 +147,4 @@ def get_scores(user):
                           scores['repos_count'] / 5)
 
     return scores
+
