@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_oauthlib.client import OAuth
+from flask.ext.bootstrap import Bootstrap
 from celery import Celery
 import os
 import pymongo
@@ -11,6 +12,7 @@ GOODREADS_SECRET_ID = os.environ.get("GOODREADS_SECRET_ID")
 
 app = Flask(__name__)
 app.config.from_object('config')
+bootstrap = Bootstrap(app)
 
 oauth = OAuth(app)
 github_auth = oauth.remote_app(

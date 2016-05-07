@@ -1,7 +1,8 @@
 import datetime
 from github import Github
 from app import celery, connect_mongo
-
+import socket
+from github.GithubException import GithubException
 
 class GithubProvider:
 
@@ -23,11 +24,16 @@ class GithubProvider:
             repos_count += 1
             stars += repo.stargazers_count
             commits = repo.get_commits(since=since, until=until)
-            for commit in commits:
-                commits_count += 1
-                stats = commit.stats
-                additions += stats.additions
-                deletions += stats.deletions
+            print(repo.full_name)
+            
+            try:
+                for commit in commits:
+                    commits_count += 1
+                    stats = commit.stats
+                    additions += stats.additions
+                    deletions += stats.deletions
+            except GithubException:
+                continue
 
         return {
             'repos_count': repos_count,
@@ -49,4 +55,7 @@ def get_github_stats_for_day(github_token, dt, name):
 
     print("Getting GitHub stats for {}, {}".format(dt, name))
     stats = GithubProvider(github_token).run(dt)
+    with open('/tmp/loggger', 'a') as l:
+        print('stats {}'.format(github_token), file=l)
+
     db.github.by_day.update({'user': name, 'dt': dt.toordinal()}, {'$set': {'stats': stats}}, upsert=True)
