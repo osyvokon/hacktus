@@ -1,3 +1,6 @@
+import os
+import random
+
 from app import app, github_auth, db
 from flask import render_template, flash, redirect, request, g, session, url_for, jsonify
 from app.github_task import GithubProvider, get_github_stats_for_day
@@ -17,9 +20,11 @@ def index():
         return redirect(url_for('profile'))
     else:
         user = None
+    logo = random.choice(os.listdir(os.getcwd() + '/app/static/logos/'))
     return render_template('index.html',
                            title='Home',
-                           user=user)
+                           user=user,
+                           logo=logo)
 
 @app.route('/gh_callback')
 def authorized():

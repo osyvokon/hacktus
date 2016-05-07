@@ -3,6 +3,7 @@
     <title>HACKTUS</title>
     <link rel="stylesheet" href="{{bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap')}}">
     <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    {% block headers %}{% endblock %}
 </head>
 <body>
 {% with messages = get_flashed_messages() %}
@@ -14,18 +15,24 @@
 </ul>
 {% endif %}
 {% endwith %}
-	<div class="container">
-      <div class="header clearfix">
-        <nav>
+	<div class="container-fluid">
+      <div class="header clearfix row">
+        <div class="col-md-2"></div>
+        <a href="/"><img src="static/logo.png" class="col-md-2 hacktus-logo img-responsive"></a>
+        <nav class="col-xs-3 col-sm-6">
           <ul class="nav nav-pills pull-right">
             <li role="presentation" class="active"><a href="/login">Login with GitHub</a></li>
             <li role="presentation" ><a href="/logout">Logout</a></li>
           </ul>
         </nav>
-        <h3 class="text-muted"><a href="/">Hacktus</a></h3>
+        <div class="col-md-2"></div>
       </div>
-      <div class="jumbotron">
-        {% block content %}{% endblock %}
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="jumbotron col-md-8">
+          {% block content %}{% endblock %}
+        </div>
+        <div class="col-md-2"></div>
       </div>
     </div>
 </body>
